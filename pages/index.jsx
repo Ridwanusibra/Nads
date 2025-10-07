@@ -1,73 +1,68 @@
+"use client";
 import { useState } from "react";
-import axios from "axios";
 
 export default function Home() {
   const [username, setUsername] = useState("");
-  const [count, setCount] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [result, setResult] = useState(null);
 
   const handleCheck = async () => {
-    if (!username) return;
+    if (!username.trim()) return;
     setLoading(true);
-    setError(null);
-    setCount(null);
-
+    setResult(null);
     try {
-      const res = await axios.get(`/api/count?username=${username}`);
-      setCount(res.data.count);
+      const res = await fetch(`/api/check?username=${username}`);
+      const data = await res.json();
+      setResult(data.count);
     } catch (err) {
-      setError("Something went wrong. Try again.");
+      setResult("Error fetching data");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleShare = () => {
-    const cleanUser = username.replace("@", "");
-    const text = encodeURIComponent(
-      `I mentioned $Gmonad ${count} times 😎💜\n\nCheck your own Monad vibes at https://nads.vercel.app`
-    );
-    const url = `https://twitter.com/intent/tweet?text=${text}`;
-    window.open(url, "_blank");
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-purple-900 to-black text-white px-4">
-      <h1 className="text-4xl font-bold mb-6 text-center">💜 NADS — Monad Mention Checker</h1>
-      <p className="mb-4 text-center text-gray-300 max-w-md">
-        Enter your Twitter handle and see how many times you’ve mentioned <span className="text-purple-400">$Gmonad</span>.
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0018] to-[#1a0042] flex flex-col items-center justify-center text-white font-sans p-6">
+      <h1 className="text-4xl md:text-6xl font-bold mb-8 text-center">
+        🔮 NADS G-Monad Tracker
+      </h1>
+      <p className="text-lg mb-6 text-gray-300 text-center max-w-lg">
+        Enter your Twitter handle to see how many times you’ve mentioned
+        <span className="text-purple-400 font-semibold"> $GMONAD</span>.
       </p>
 
-      <input
-        type="text"
-        placeholder="@username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        className="text-black rounded-md p-3 w-64 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
-      />
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="@username"
+          className="p-3 rounded-xl bg-white/10 text-white border border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-400 w-64"
+        />
+        <button
+          onClick={handleCheck}
+          className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-2xl text-white font-bold shadow-lg hover:shadow-purple-500/40 transition-all duration-300"
+          disabled={loading}
+        >
+          {loading ? "Checking..." : "Check G-Monad"}
+        </button>
+      </div>
 
-      <button
-        onClick={handleCheck}
-        disabled={loading || !username}
-        className="bg-purple-600 hover:bg-purple-700 transition px-6 py-3 rounded-md font-semibold disabled:bg-gray-600"
-      >
-        {loading ? "Checking..." : "See My Count"}
-      </button>
-
-      {error && <p className="mt-4 text-red-400">{error}</p>}
-
-      {count !== null && !error && (
-        <div className="mt-8 flex flex-col items-center">
-          <p className="text-2xl font-semibold text-purple-300 text-center">
-            @{username.replace("@", "")} mentioned $Gmonad {count} times 💫
+      {result !== null && (
+        <div className="mt-10 bg-white/10 p-6 rounded-2xl backdrop-blur-lg text-center shadow-lg">
+          <p className="text-xl">
+            {typeof result === "number" ? (
+              <>
+                @{username} has mentioned{" "}
+                <span className="text-purple-400 font-semibold">
+                  $GMONAD
+                </span>{" "}
+                <span className="font-bold text-purple-300">{result}</span> times!
+              </>
+            ) : (
+              <span className="text-red-400">{result}</span>
+            )}
           </p>
-          <button
-            onClick={handleShare}
-            className="mt-4 bg-purple-500 hover:bg-purple-600 transition px-5 py-2 rounded-md font-medium"
-          >
-            Share My Result 🔗
-          </button>
         </div>
       )}
     </div>
